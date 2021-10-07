@@ -3,6 +3,8 @@ import type { Settings } from './generated-types'
 
 import trackCustomer from './trackCustomer'
 
+import trackPurchase from './trackPurchase'
+
 export const trackUrl = 'https://public.fbot-sandbox.me/track/'
 
 const uuidRegex = /^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/
@@ -35,7 +37,8 @@ const destination: DestinationDefinition<Settings> = {
   },
 
   actions: {
-    trackCustomer
+    trackCustomer,
+    trackPurchase
   }
 }
 
