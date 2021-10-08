@@ -1,10 +1,88 @@
-// import nock from 'nock'
-// import { createTestEvent, createTestIntegration } from '@segment/actions-core'
-// import Destination from '../../index'
+import nock from 'nock'
+import { createTestEvent, createTestIntegration, JSONValue } from '@segment/actions-core'
+import Destination from '../../index'
 
-// const testDestination = createTestIntegration(Destination)
+import { trackUrl } from '../../index'
+import { base64Decode } from '../../base64'
+import { get } from '@segment/actions-core'
+
+const testDestination = createTestIntegration(Destination)
+
+const splitUrlRe = /^(\w+:\/\/[^/]+)(.*)/
 
 describe('Friendbuy.trackPurchase', () => {
-  // TODO: Test your action
-  test('dummy test', () => {})
+  test('all fields', async () => {
+    const [_, trackSchemeAndHost, trackPath] = splitUrlRe.exec(trackUrl) || []
+
+    nock(trackSchemeAndHost)
+      .get(new RegExp('^' + trackPath))
+      .reply(200, {})
+
+    const orderId = 'my order'
+    const products = [
+      { sku: 'sku1', name: 'shorts', price: 19.99, quantity: 2 },
+      { sku: 'sku2', price: 5.99 }
+    ]
+    const amount = products.reduce((acc, p) => acc + p.price * (p.quantity ?? 1), 0)
+
+    const merchantId = '1993d0f1-8206-4336-8c88-64e170f2419e'
+    const userId = 'john-doe-12345'
+    const currency = 'USD'
+    const profile = 'JWT profile'
+    const event = createTestEvent({
+      type: 'track',
+      event: 'Order Completed',
+      userId,
+      properties: {
+        order_id: orderId,
+        revenue: amount,
+        currency,
+        products: products as JSONValue
+      },
+      integrations: { 'Actions Friendbuy': { profile } as unknown as boolean },
+      timestamp: '2021-10-05T15:30:35Z'
+    })
+    // console.log('test event', event)
+
+    const r = await testDestination.testAction('trackPurchase', {
+      event,
+      settings: {
+        merchantId
+      },
+      useDefaultMappings: true
+      // mapping,
+      // auth,
+    })
+
+    // console.log(JSON.stringify(r, null, 2))
+    expect(r.length).toBe(1)
+    expect(r[0].options.searchParams).toMatchObject({
+      type: 'purchase',
+      merchantId,
+      metadata: expect.any(String),
+      payload: expect.any(String),
+      tracker: profile
+    })
+    const searchParams = r[0].options.searchParams as Record<string, string>
+
+    const metadata = JSON.parse(base64Decode(searchParams.metadata))
+    // console.log("metadata", metadata)
+    expect(metadata).toMatchObject({
+      url: get(event.context, ['page', 'url']),
+      title: get(event.context, ['page', 'title']),
+      ipAddress: get(event.context, ['ip'])
+    })
+
+    const payload = JSON.parse(decodeURIComponent(base64Decode(searchParams.payload)))
+    // console.log("payload", JSON.stringify(payload, null, 2))
+    expect(payload).toMatchObject({
+      purchase: {
+        id: orderId,
+        amount,
+        currency,
+        customer: { id: userId },
+        products
+      }
+    })
+  })
 })
