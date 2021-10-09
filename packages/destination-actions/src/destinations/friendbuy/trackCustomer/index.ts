@@ -10,6 +10,7 @@ const action: ActionDefinition<Settings, Payload> = {
   description: 'Create a customer in Friendbuy or update it if it exists.',
   defaultSubscription: 'type = "identify"', // see https://segment.com/docs/config-api/fql/
   // https://segment.com/docs/connections/spec/identify/
+  // https://segment.com/docs/connections/spec/common/
   fields: {
     customerId: {
       label: 'Customer ID',
@@ -60,6 +61,13 @@ const action: ActionDefinition<Settings, Payload> = {
       required: false,
       default: { '@path': '$.context.page.title' }
     },
+    userAgent: {
+      label: 'User Agent',
+      description: "The browser's User-Agent string.",
+      type: 'string',
+      required: false,
+      default: { '@path': '$.context.userAgent' }
+    },
     ipAddress: {
       label: 'IP Address',
       description: "The users's IP address.",
@@ -105,7 +113,13 @@ const action: ActionDefinition<Settings, Payload> = {
         metadata,
         payload,
         ...(data.payload.profile && { tracker: data.payload.profile })
-      }
+      },
+      headers: pickDefined({
+        // fbt-proxy validates the profile.domain against the Referer header.
+        Referer: data.payload.pageUrl,
+        'User-Agent': data.payload.userAgent,
+        'X-Forwarded-For': data.payload.ipAddress
+      })
     })
   }
 }
@@ -117,6 +131,16 @@ function getName(payload: Payload): string | undefined {
     payload.firstName  && payload.lastName ? `${payload.firstName} ${payload.lastName}`
     :                                        undefined
   )
+}
+
+function pickDefined<T>(obj: Record<string, T>): Record<string, NonNullable<T>> {
+  const result: Record<string, NonNullable<T>> = {}
+  Object.entries(obj).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      result[key] = value as NonNullable<T>
+    }
+  })
+  return result
 }
 
 export default action

@@ -14,9 +14,13 @@ describe('Friendbuy.trackCustomer', () => {
   test('all fields', async () => {
     const [_, trackSchemeAndHost, trackPath] = splitUrlRe.exec(trackUrl) || []
 
+    const nockRequests: any[] /* (typeof nock.ReplyFnContext.req)[] */ = []
     nock(trackSchemeAndHost)
       .get(new RegExp('^' + trackPath))
-      .reply(200, {})
+      .reply(200, function (_uri, _requestBody) {
+        nockRequests.push(this.req)
+        return {}
+      })
 
     const merchantId = '1993d0f1-8206-4336-8c88-64e170f2419e'
     const userId = 'john-doe-12345'
@@ -71,5 +75,14 @@ describe('Friendbuy.trackCustomer', () => {
     expect(payload).toMatchObject({
       customer: { id: userId, email, firstName, lastName, name: `${firstName} ${lastName}` }
     })
+
+    const headerValue = (hdr: string) => stringify(nockRequests[0].headers[hdr])
+    expect(headerValue('user-agent')).toBe(get(event.context, 'userAgent'))
+    expect(headerValue('referer')).toBe(get(event.context, ['page', 'url']))
+    expect(headerValue('x-forwarded-for')).toBe(get(event.context, ['ip']))
   })
 })
+
+function stringify(arg: string | string[]): string {
+  return typeof arg === 'string' ? arg : arg.join()
+}

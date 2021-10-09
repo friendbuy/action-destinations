@@ -30,6 +30,10 @@ export interface Payload {
    */
   pageTitle?: string
   /**
+   * The browser's User-Agent string.
+   */
+  userAgent?: string
+  /**
    * The users's IP address.
    */
   ipAddress?: string
