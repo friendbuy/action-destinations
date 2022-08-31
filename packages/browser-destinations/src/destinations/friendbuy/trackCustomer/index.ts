@@ -44,7 +44,7 @@ const action: BrowserActionDefinition<Settings, FriendbuyAPI, Payload> = {
   perform: (friendbuyAPI, { payload }) => {
     addName(payload)
     const friendbuyPayload = mapEvent(trackCustomerPub, payload as unknown as AnalyticsPayload)
-    friendbuyAPI.push(['track', 'customer', friendbuyPayload, true])
+    return friendbuyAPI.push(['track', 'customer', friendbuyPayload, true])
   }
 }
 

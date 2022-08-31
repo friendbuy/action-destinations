@@ -46,7 +46,7 @@ describe('Friendbuy.trackPage', () => {
     })
     // console.log('context', JSON.stringify(context, null, 2))
 
-    trackPage.page?.(context)
+    await trackPage.page?.(context)
 
     // console.log('trackSignUp request', JSON.stringify(window.friendbuyAPI.push.mock.calls[0], null, 2))
     expect(window.friendbuyAPI?.push).toHaveBeenCalledWith([

@@ -97,7 +97,7 @@ describe('Friendbuy.trackPurchase', () => {
       })
       // console.log('context1', JSON.stringify(context1, null, 2))
 
-      trackPurchase.track?.(context1)
+      await trackPurchase.track?.(context1)
 
       // console.log('trackPurchase request', JSON.stringify(window.friendbuyAPI.push.mock.calls[0], null, 2))
       expect(window.friendbuyAPI?.push).toHaveBeenNthCalledWith(1, [
@@ -133,7 +133,7 @@ describe('Friendbuy.trackPurchase', () => {
         }
       })
 
-      trackPurchase.track?.(context2)
+      await trackPurchase.track?.(context2)
 
       expect(window.friendbuyAPI?.push).toHaveBeenNthCalledWith(2, [
         'track',
@@ -163,7 +163,7 @@ describe('Friendbuy.trackPurchase', () => {
         }
       })
 
-      trackPurchase.track?.(context3)
+      await trackPurchase.track?.(context3)
 
       expect(window.friendbuyAPI?.push).toHaveBeenNthCalledWith(3, [
         'track',
@@ -192,7 +192,7 @@ describe('Friendbuy.trackPurchase', () => {
         }
       })
 
-      trackPurchase.track?.(context4)
+      await trackPurchase.track?.(context4)
 
       expect(window.friendbuyAPI?.push).toHaveBeenNthCalledWith(4, [
         'track',

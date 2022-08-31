@@ -42,7 +42,7 @@ const action: BrowserActionDefinition<Settings, FriendbuyAPI, Payload> = {
     const analyticsPayload = moveEventPropertiesToRoot(payload as unknown as AnalyticsPayload)
     addName(analyticsPayload)
     const friendbuyPayload = mapEvent(trackCustomEventPub, analyticsPayload)
-    friendbuyAPI.push(['track', payload.eventType, friendbuyPayload])
+    return friendbuyAPI.push(['track', payload.eventType, friendbuyPayload])
   }
 }
 

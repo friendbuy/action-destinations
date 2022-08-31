@@ -51,7 +51,7 @@ const action: BrowserActionDefinition<Settings, FriendbuyAPI, Payload> = {
       ['category', data.payload.category],
       ['title', data.payload.title]
     ])
-    friendbuyAPI.push(['track', 'page', friendbuyPayload, true])
+    return friendbuyAPI.push(['track', 'page', friendbuyPayload, true])
   }
 }
 
